@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.domor.dao.basic.HistoryDataDao">
+
+<!-- 传感器列表 -->
+	<select id="queryDeviceByPond" parameterType="java.util.Map" resultType="map">
+		SELECT * from device  WHERE pondCode=#{pondCode} and typeCode in ("0151","0141")
+	</select>
+	
+	<select id="findDeptsByUser" parameterType="String" resultType="map">
+		SELECT * FROM dept WHERE code IN (
+			SELECT DISTINCT p.deptCode FROM rl_user_pond r 
+			LEFT JOIN pond p ON r.pondCode = p.code
+			WHERE r.username = #{username}
+		)
+	</select>
+	
+	<select id="findPondsByUser" parameterType="String" resultType="map">
+		SELECT * from pond WHERE code in 
+		(SELECT pondCode from rl_user_pond WHERE username=#{username})
+	</select>
+	
+	<select id="findDeptsByCode" resultType="map">
+		SELECT * FROM dept
+		WHERE code IN 
+		<foreach collection="array" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	<!-- 通过sensorID 找到对应的项目类型 -->
+	<select id="querySensorID" resultType="map" parameterType="map">
+		SELECT distinct typeCode as dataKind FROM device
+		WHERE  deviceCode = #{sensorID}
+	</select>
+
+
+    <select id="count" parameterType="map" resultType="int">
+	  	SELECT COUNT(1) FROM (
+              SELECT * FROM ( 
+                       SELECT * FROM tongxin 
+                            where time  &gt; #{startTime} and 
+                                 time &lt;  #{endTime} and 
+                                 sensorID =  #{deviceCode} 
+                             ) a  GROUP BY floor(unix_timestamp(time) / (600)) 
+        ) b
+	</select>
+	
+	<select id="query" parameterType="map" resultType="map">
+	 	SELECT  b.* ,c.deviceName FROM (
+              SELECT * FROM ( 
+                       SELECT * FROM tongxin 
+                            where time  &gt; #{startTime} and 
+                                 time &lt;  #{endTime} and 
+                                 sensorID =  #{deviceCode} 
+                             ) a  GROUP BY floor(unix_timestamp(time) / (600)) 
+        ) b LEFT JOIN device c on b.sensorID = c.deviceCode
+		 <if test="sort != null and order != null">
+	    	order by ${sort} ${order}
+	    </if>
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="queryAll" parameterType="map" resultType="map">
+	 	SELECT  b.* ,c.deviceName FROM (
+              SELECT * FROM ( 
+                       SELECT * FROM tongxin 
+                            where time  &gt; #{startTime} and 
+                                 time &lt;  #{endTime} and 
+                                 sensorID =  #{deviceCode} 
+                             ) a  GROUP BY floor(unix_timestamp(time) / (600)) 
+        ) b LEFT JOIN device c on b.sensorID = c.deviceCode
+	</select>
+	
+	
+	<select id="queryAllForCurve" parameterType="map" resultType="map">
+	 	SELECT  b.* ,c.deviceName FROM (
+              SELECT * FROM ( 
+                       SELECT * FROM tongxin 
+                            where time  &gt; #{startTime} and 
+                                 time &lt;  #{endTime} and 
+                                 sensorID =  #{deviceCode} 
+                             ) a  <!-- GROUP BY floor(unix_timestamp(time) / (600))  -->
+        ) b LEFT JOIN device c on b.sensorID = c.deviceCode  order by b.time
+	</select>
+	
+
+	
+	
+</mapper>

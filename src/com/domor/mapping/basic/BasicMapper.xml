@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.domor.dao.basic.BasicDao">
+
+    <select id="getUsers_total" parameterType="com.domor.model.SearchDomain" resultType="java.lang.Integer">
+        select count(1) from user a join dept b on a.dept = b.deptId join role c on a.role = c.roleId
+        <where>
+            <if test="key1 != null and key1 !=''">
+                and ( a.username like "%"#{key1}"%" or a.realname like "%"#{key1}"%")
+            </if>
+            <if test="key2 != null and key2 != ''">
+                and a.dept = #{key2}
+            </if>
+        </where>
+        order by ${sort} ${order}
+    </select>
+
+    <select id="getUsers" parameterType="com.domor.model.SearchDomain" resultType="java.util.HashMap">
+        select * from user a join dept b on a.dept = b.deptId join role c on a.role = c.roleId
+        <where>
+            <if test="key1 != null and key1 !=''">
+                and ( a.username like "%"#{key1}"%" or a.realname like "%"#{key1}"%")
+            </if>
+            <if test="key2 != null and key2 != ''">
+                and a.dept = #{key2}
+            </if>
+        </where>
+        order by ${sort} ${order}
+        limit #{skipCount},#{rows}
+    </select>
+
+
+    <insert id="user_add_save" parameterType="com.domor.model.User">
+        insert into user(username,password,realname,dept,area,role,sex,age,phone,delete_flag)
+        values(#{username},'123456',#{realname},#{dept},#{area},#{role},#{sex},#{age},#{phone},0)
+    </insert>
+
+
+    <select id="getUser" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select * from user
+        where username=#{_parameter}
+    </select>
+
+    <update id="user_edit_save" parameterType="com.domor.model.User">
+        update user
+        set realname=#{realname},dept=#{dept},area=#{area},role=#{role},sex=#{sex},age=#{age},phone=#{phone}
+        where  username = #{username}
+    </update>
+
+    <update id="user_del" parameterType="java.lang.String">
+        update user set delete_flag = 1 where  username = #{_parameter}
+    </update>
+
+
+    <select id="getRoleList" parameterType="java.lang.Integer" resultType="java.util.HashMap">
+        select * from role
+        <where>
+            <if test="_parameter !=-1">
+                delete_flag = #{_parameter}
+            </if>
+        </where>
+    </select>
+
+    <select id="getRoleListCount" resultType="integer">
+        select count(1) from role
+    </select>
+
+    <select id="getPagedRoleList" parameterType="map" resultType="map">
+        SELECT * FROM role 
+	    <where>
+	    	<if test="delete_flag != null">
+	    		AND delete_flag = #{delete_flag}
+	    	</if>
+	    </where>
+	    <if test="sort != null and order != null">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="skipCount != null and rows != null">
+			LIMIT #{skipCount},#{rows} 
+		</if>
+    </select>
+
+    <insert id="role_add" parameterType="com.domor.model.Role">
+        insert into role(roleName, creator, createTime)
+        values(#{roleName}, #{creator}, #{createTime})
+    </insert>
+
+    <update id="role_edit_save" parameterType="com.domor.model.Role">
+        update
+        	role
+        set
+        roleName = #{roleName},
+        delete_flag = #{delete_flag},
+        editor = #{editor},
+        editTime = #{editTime}
+        where
+        roleId = #{roleId}
+    </update>
+
+    <update id="role_del" parameterType="java.lang.Integer">
+        update role set delete_flag = 1 where roleId =#{roleId}
+    </update>
+
+    <select id="getRoleById" parameterType="java.lang.Integer" resultType="com.domor.model.Role">
+        select * from role where roleId = #{roleId} and delete_flag = 0
+    </select>
+
+    <select id="getRole" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select * from role where roleName = #{roleName} and delete_flag = 0
+    </select>
+
+
+    <select id="getMenu" parameterType="java.lang.Integer" resultType="com.domor.model.Menu">
+        select * from menu where menuId = #{menuId} and delete_flag = 0
+    </select>
+
+    <select id="getAllMenus" resultType="java.util.HashMap">
+        select * from menu where delete_flag = 0
+    </select>
+
+    <select id="getMenuIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select menuId from rights where roleId = #{roleId} and delete_flag = 0
+    </select>
+
+    <select id="hasChildren" parameterType="java.lang.Integer" resultType="boolean">
+        select count(*) from menu m where m.parentId = #{param1} and m.delete_flag = 0
+    </select>
+
+    <delete id="delRightByRoleId" parameterType="java.lang.Integer">
+        delete from rights where roleId = #{roleId}
+    </delete>
+
+    <select id="isExistRight" resultType="java.lang.Integer">
+        select count(*) from rights where roleId = #{param1} and menuId = #{param2}
+    </select>
+
+    <insert id="addRight">
+        insert into rights(roleId, menuId, delete_flag) values(#{param1}, #{param2}, 0)
+    </insert>
+
+
+    <select id="getAreaListForComb" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select * from region where father_id= #{_parameter}
+    </select>
+	
+	<select id="getArea" parameterType="java.lang.Integer" resultType="java.util.HashMap">
+		SELECT id, areaname FROM area WHERE parentid = #{parentid}
+	</select>
+	
+	<select id="getCommunity" parameterType="java.lang.Integer" resultType="java.util.HashMap">
+		SELECT id, `name` FROM community WHERE regionCode = #{regionCode}
+	</select>
+
+</mapper>

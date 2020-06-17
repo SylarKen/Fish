@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.ProductionDao">
+
+	<select id="getUserPondList" parameterType="map" resultType="map">
+		select b.code id,b.name text,b.* from rl_user_pond a
+		join pond b on a.pondCode = b.code and a.username = #{username} 
+		join dept d on b.deptCode = d.code 
+		<where>
+			<if test="deptCode != null and deptCode != ''">
+			     d.code=#{deptCode} or d.pCode=#{deptCode}
+			</if>
+			<if test="pondName != null and pondName != ''">
+				 b.name like concat('%', #{pondName},'%')
+			</if>
+		</where>
+	
+	</select>
+	
+	<select id="getPondByCode" parameterType="string" resultType="map">
+		select * from pond where code = #{code} 
+	</select>
+	
+	<select id="getDeptByCode" parameterType="string" resultType="map">
+		select b.code id,b.name text,b.* from dept b where b.code = #{code}
+	</select>
+	
+</mapper>

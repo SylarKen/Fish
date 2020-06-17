@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.CollectorDao">
+
+	<insert id="insert" parameterType="map">
+		INSERT INTO collector(collectorCode, collectorId, collectorName, areaCode, areaName, pointCode, pointName, buyDate, expiringDate, effectiveDate, creator, createTime, delete_flag) 
+		VALUES (#{collectorCode}, #{collectorId}, #{collectorName}, #{areaCode}, #{areaName}, #{pointCode}, #{pointName}, #{buyDate}, #{expiringDate}, #{effectiveDate}, #{creator}, NOW(), 0)
+	</insert>
+	
+	<update id="update" parameterType="map">
+		UPDATE collector SET 
+			collectorCode = #{collectorCode},
+		    collectorId = #{collectorId},
+		 	collectorName = #{collectorName},
+			areaCode = #{areaCode},
+			areaName = #{areaName},
+			pointCode = #{pointCode},
+			pointName = #{pointName},
+			buyDate = #{buyDate},
+			expiringDate = #{expiringDate},
+			effectiveDate = #{effectiveDate},
+			editor = #{editor},
+			editTime = NOW(),
+			delete_flag = #{delete_flag}
+		WHERE
+		collectorCode = #{collectorCode}
+	</update>
+	
+	<select id="getLastCode" resultType="String" parameterType="String">
+		SELECT collectorCode FROM collector WHERE collectorCode like CONCAT('%', #{code}, '%')
+	</select>
+	
+	<select id="getByCode" resultType="map" parameterType="String">
+		SELECT * FROM collector  WHERE collectorCode = #{code}
+	</select>
+	
+	<select id="count" parameterType="map" resultType="int">
+		SELECT COUNT(1) FROM collector WHERE 0 = 0
+			<if test="collectorCode != null and collectorCode != ''">
+		    	 and collectorCode like concat('%', #{collectorCode}, '%')
+		    </if>
+	     	<if test="pointCode != null and pointCode != ''">
+		    	 and pointCode like concat('%', #{pointCode}, '%')
+		    </if>
+	</select>
+	<select id="query" parameterType="map" resultType="map">
+		SELECT * FROM collector WHERE 0 = 0
+		<if test="collectorCode != null and collectorCode != ''">
+	    	 and collectorCode like concat('%', #{collectorCode}, '%')
+	    </if>
+     	<if test="pointCode != null and pointCode != ''">
+	    	 and pointCode like concat('%', #{pointCode}, '%')
+	    </if>
+		<if test="sort != null and order != ''">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="start != null and rows != ''">
+			LIMIT #{start}, #{rows} 
+		</if>
+	</select>
+	
+</mapper>

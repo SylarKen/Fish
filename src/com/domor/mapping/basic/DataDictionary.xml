@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.domor.dao.basic.DataDictionaryDao">
+   <insert id="insert" parameterType="com.domor.model.DataDictionary">
+		INSERT INTO data_dictionary
+			(type, code, content, memo, delete_flag, creator, createTime)
+		VALUES
+			(#{type}, #{code}, #{content}, #{memo}, #{delete_flag}, #{creator}, #{createTime})
+	</insert>
+	<update id="update" parameterType="com.domor.model.DataDictionary">
+		UPDATE data_dictionary 
+		SET 	
+	       type = #{type},
+	       content = #{content},
+		   memo = #{memo},      
+	       delete_flag = #{delete_flag},
+	       editor = #{editor},
+	       editTime=#{editTime}
+	   WHERE  
+	   	  id = #{id}
+	</update>
+	<!--
+    <delete id="delete" parameterType="int">
+		UPDATE data_dictionary SET delete_flag = 1 WHERE dataId = #{dataId}
+	</delete>
+	-->	
+	<select id="findById" parameterType="int" resultType="com.domor.model.DataDictionary">
+		SELECT * FROM data_dictionary WHERE id = #{id}
+	</select>
+	<select id="count" parameterType="map" resultType="int" >      
+	    SELECT count(1) FROM data_dictionary 
+		<where>  
+		  <if test="type != null and type != null">
+	    	type = #{type}
+	    </if>
+        </where>
+	</select>
+	
+	<select id="query" parameterType="map" resultType="com.domor.model.DataDictionary" >      
+	    SELECT * FROM data_dictionary 
+		<where>  
+   
+        <if test="type != null and type != null">
+	    	type = #{type}
+	    </if>
+	      </where>
+        <if test="sort != null and order != null">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="start != null and rows != null">
+			LIMIT #{start}, #{rows} 
+		</if>
+	</select>
+	
+	<select id="getNewCode" resultType="String" >
+		<!-- 
+		 SELECT ISNULL(RIGHT('000' + CAST(CAST(MAX(code) AS INT) + 1 AS VARCHAR), 3), '001') 
+			FROM data_dictionary d WHERE 
+			d.companyId =#{param1} AND d.type = #{param2}
+		-->
+		SELECT 0 
+	</select>
+	
+	<select id="getByType" resultType="com.domor.model.DataDictionary">
+		SELECT * FROM data_dictionary WHERE type = #{param1} and companyId =  #{param2}
+	</select>
+	
+</mapper>

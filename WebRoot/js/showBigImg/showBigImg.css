@@ -1,0 +1,25 @@
+@CHARSET "UTF-8";
+.close {
+	width: 30px;
+	height: 30px;
+	background: url(image/close_normal.png); 
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	_position: absolute;
+	_top: expression(documentElement.scrollTop +5 + "px");
+	cursor: pointer;
+}
+.close:hover {
+	background: url(image/close_hover.png);
+}
+#outerdiv {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: rgba(0, 0, 0, 0.7);
+	z-index: 9999;
+	width: 100%;
+	height: 100%;
+	display: none;
+}

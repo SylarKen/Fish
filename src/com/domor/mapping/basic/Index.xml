@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.IndexDao">
+
+	<select id="getAreaParent" parameterType="string" resultType="map">
+		select * from area where id = (
+			select max(parentid) from area where id = #{id}
+		)
+	</select>
+
+<!--	<select id="getDeviceValue" parameterType="map" resultType="map">-->
+<!--		select * from device -->
+<!--		where pondCode = #{pondCode} and delete_flag = 0 -->
+<!--		<if test=" typeCode !=null and typeCode != '' ">-->
+<!--			and typeCode = #{typeCode}-->
+<!--		</if>-->
+<!--	</select>-->
+
+<!--	<select id="getDeviceValue" parameterType="map" resultType="map">-->
+<!--		select * from collector_new_gateway-->
+<!--		where deptCode = #{pondCode} and delete_flag = 0-->
+
+<!--	</select>-->
+
+	<select id="getDeviceValue" parameterType="map" resultType="map">
+		select c.* , r.temp0 , r.ph , r.o2 from collector_new_gateway c
+						  LEFT JOIN (
+			SELECT * FROM t_record
+			WHERE id in(
+				select MAX(id) from t_record
+				group by ICCID
+			)
+		) r ON r.ICCID = c.collectorId
+		WHERE c.deptCode = #{pondCode} and c.delete_flag = 0
+		ORDER BY r.id DESC
+	</select>
+</mapper>

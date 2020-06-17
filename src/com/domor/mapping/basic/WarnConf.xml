@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.WarnConfDao">
+
+	<insert id="add" parameterType="map">
+		INSERT INTO warn_conf(collectorCode, deviceCode, min, max, blueMin, blueMax, orangeMin, orangeMax, yellowMin, yellowMax, redMin, redMax, creator, createTime)
+		VALUES(#{collectorCode}, #{deviceCode}, #{min}, #{max}, #{blueMin}, #{blueMax}, #{orangeMin}, #{orangeMax}, #{yellowMin}, #{yellowMax}, #{redMin}, #{redMax}, #{creator}, #{createTime})
+	</insert>
+	
+	<update id="edit" parameterType="map">
+		UPDATE warn_conf 
+		<set>
+			<if test="collectorCode != null">
+				collectorCode = #{collectorCode},
+			</if>
+			<if test="deviceCode != null">
+				deviceCode = #{deviceCode},
+			</if>
+			<if test="timeLimit != null">
+				timeLimit = #{timeLimit},
+			</if>
+			<if test="min != null">
+				min = #{min},
+			</if>
+			<if test="max != null">
+				max = #{max},
+			</if>
+			<if test="blueMin != null">
+				blueMin = #{blueMin},
+			</if>
+			<if test="blueMax != null">
+				blueMax = #{blueMax},
+			</if>
+			<if test="orangeMin != null">
+				orangeMin = #{orangeMin},
+			</if>
+			<if test="orangeMax != null">
+				orangeMax = #{orangeMax},
+			</if>
+			<if test="yellowMin != null">
+				yellowMin = #{yellowMin},
+			</if>
+			<if test="yellowMax != null">
+				yellowMax = #{yellowMax},
+			</if>
+			<if test="redMin != null">
+				redMin = #{redMin},
+			</if>
+			<if test="redMax != null">
+				redMax = #{redMax},
+			</if>
+			<if test="editor != null">
+				editor = #{editor},
+			</if>
+			<if test="editTime != null">
+				editTime = #{editTime},
+			</if>
+			<if test="delete_flag != null">
+				delete_flag = #{delete_flag},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<select id="query" parameterType="map" resultType="map">
+		SELECT w.*, d.deviceName, c.collectorName FROM warn_conf w 
+		LEFT JOIN device d ON w.deviceCode = d.deviceCode
+		LEFT JOIN collector c ON w.collectorCode = c.collectorCode
+		<where>
+			<if test="collectorCode != null">
+				AND w.collectorCode = #{collectorCode}
+			</if>
+		</where>
+		<if test="sort != null and order != null">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="start != null and rows != null">
+			LIMIT #{start}, #{rows}
+		</if>
+	</select>
+	
+	<select id="findById" parameterType="int" resultType="map">
+		SELECT * FROM warn_conf WHERE id = #{id}
+	</select>
+	
+	<select id="findByDeviceCode" parameterType="String" resultType="map">
+		SELECT * FROM warn_conf WHERE deviceCode = #{deviceCode} AND delete_flag = 0
+	</select>
+	
+	<select id="getWarnInfo" parameterType="String" resultType="map">
+		SELECT b.*, a.num, c.collectorName, c.deviceName FROM (
+			SELECT COUNT(1) AS num, w.deviceCode FROM tongxin t 
+			LEFT JOIN warn_conf w ON t.sensorID = w.deviceCode 
+			LEFT JOIN device d ON t.sensorID = d.deviceCode
+			WHERE t.isOK = 1 AND t.insertTime > SUBDATE(NOW(), INTERVAL w.timeLimit * 60 * 60 SECOND) AND w.id IS NOT NULL AND d.pondCode = #{pondCode}
+			GROUP BY t.sensorID
+		) a 
+		LEFT JOIN warn_conf b ON a.deviceCode = b.deviceCode
+		LEFT JOIN device c ON a.deviceCode = c.deviceCode
+	</select>
+	
+</mapper>

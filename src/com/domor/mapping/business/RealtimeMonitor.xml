@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.business.RealtimeMonitorDao">
+	<select id="count" parameterType="map" resultType="int">
+		<!-- SELECT COUNT(1) from tongxin t join collector c on t.collectorID=c.collectorId 
+		<where>
+		c.collectorCode=#{collectorCode}
+	    </where> -->
+	     SELECT COUNT(1) from device WHERE deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="query" parameterType="java.util.Map" resultType="map">
+		<!-- SELECT * FROM tongxin 
+		where sensorId=#{sensorId} -->
+		<!-- SELECT c.collectorName,t.* from tongxin t join collector c on t.collectorID=c.collectorId 
+		where c.collectorCode=#{collectorCode} -->
+		SELECT * from device WHERE deviceCode=#{deviceCode}
+		<!-- SELECT * from device
+		<where>
+		<if test="deviceCode != null">
+	    	deviceCode=#{deviceCode}
+	    </if>
+	    <if test="deviceCode == null">
+	    	deviceCode=#{deviceCode}
+	    </if>
+	    </where> -->
+	</select>
+	
+	<select id="queryNewChart" parameterType="java.util.Map" resultType="map">
+		<!-- SELECT t.* FROM tongxin t join collector c on t.collectorID=c.collectorId WHERE
+		t.time in (select max(time) from tongxin WHERE dataType=1 GROUP BY
+		tongxin.collectorID,tongxin.dataKind) and c.collectorCode=#{collectorCode} -->
+		SELECT * from device WHERE deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="queryPond" parameterType="java.util.Map" resultType="map">
+		select * from pond p JOIN dept d on p.deptCode=d.`code` 
+		WHERE p.deptCode=#{deptId}
+	</select>
+	
+	<select id="queryDevice" parameterType="java.util.Map" resultType="map">
+		SELECT * from device  WHERE collectorCode=#{collectorCode}
+	</select>
+	
+	<select id="queryDeviceByCode" parameterType="java.util.Map" resultType="map">
+		SELECT * from device  WHERE deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="queryDeviceByPond" parameterType="java.util.Map" resultType="map">
+		SELECT * from device  WHERE pondCode=#{pondCode} and typeCode in ("0151","0141")
+	</select>
+	
+	<select id="countDeviceByCode" parameterType="java.util.Map" resultType="int">
+		SELECT count(1) from device  WHERE deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="queryDeviceByLntLat" parameterType="java.util.Map" resultType="map">
+		SELECT * from device d WHERE d.pondCode in (SELECT code from pond WHERE deptCode = 
+		(SELECT code from dept WHERE lng=#{lng} and lat=#{lat})) and typeCode in ("0201","0156")
+	</select>
+	
+	<select id="countDeviceByLntLat" parameterType="java.util.Map" resultType="int">
+		SELECT count(1) from device d WHERE d.pondCode in (SELECT code from pond WHERE deptCode = 
+		(SELECT code from dept WHERE lng=#{lng} and lat=#{lat})) and typeCode in ("0201","0156")
+	</select>
+	
+	<select id="queryCollector" parameterType="java.util.Map" resultType="map">
+		SELECT * from collector  WHERE pointCode=#{deptId}
+	</select>
+	
+	<select id="queryLngLat" parameterType="java.util.Map" resultType="map">
+		SELECT d.* ,dept.lat,dept.lng from device d join collector c 
+		on d.collectorCode=c.collectorCode 
+		join dept on c.pointCode=dept.`code` WHERE dept.`code`=#{pondId}
+	</select>
+	
+	<select id="queryLngLatOnly" parameterType="java.util.Map" resultType="map">
+		SELECT d.* from dept d join pond p on d.`code`=p.deptCode WHERE p.code=#{pondId}
+	</select>
+	
+	<select id="queryLngLatByUsername" parameterType="java.util.Map" resultType="map">
+		SELECT * FROM dept WHERE code IN (
+			SELECT DISTINCT p.deptCode FROM rl_user_pond r 
+			LEFT JOIN pond p ON r.pondCode = p.code
+			WHERE r.username = #{userName}
+		)
+	</select>
+	
+	<select id="query_PHCurve" parameterType="java.util.Map" resultType="map">
+		<!-- SELECT * from tongxin t join collector c on t.collectorID=c.collectorId 
+		WHERE dataType=1 and dataKind=2 and time = 
+		(SELECT max(time) from tongxin t join collector c on t.collectorID=c.collectorId 
+		WHERE dataType=1 and dataKind=2 and c.collectorCode=#{collectorCode}) 
+		and c.collectorCode=#{collectorCode} -->
+		SELECT * from device where typeCode=#{LXBH_CGQ_PH} and deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="query_TOCurve" parameterType="java.util.Map" resultType="map">
+		<!-- SELECT * from tongxin t join collector c on t.collectorID=c.collectorId 
+		WHERE dataType=1 and dataKind=1 and time = 
+		(SELECT max(time) from tongxin t join collector c on t.collectorID=c.collectorId 
+		WHERE dataType=1 and dataKind=1 and c.collectorCode=#{collectorCode}) 
+		and c.collectorCode=#{collectorCode} -->
+		SELECT * from device where typeCode=#{LXBH_CGQ_RYWD} and deviceCode=#{deviceCode}
+	</select>
+	
+	<select id="findDeptsByUser" parameterType="String" resultType="map">
+		SELECT * FROM dept WHERE code IN (
+			SELECT DISTINCT p.deptCode FROM rl_user_pond r 
+			LEFT JOIN pond p ON r.pondCode = p.code
+			WHERE r.username = #{username}
+		)
+	</select>
+	
+	<select id="findPondsByUser" parameterType="String" resultType="map">
+		SELECT * from pond WHERE code in 
+		(SELECT pondCode from rl_user_pond WHERE username=#{username})
+	</select>
+	
+	<select id="findDeptsByCode" resultType="map">
+		SELECT * FROM dept
+		WHERE code IN 
+		<foreach collection="array" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>

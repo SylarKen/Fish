@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.ReplyDao">
+
+	<select id="getCount" parameterType="map" resultType="integer">
+		select count(1) from sc_report
+		where status > 0
+		<if test="title != null and title != ''">
+	    	and title like concat('%', #{title}, '%')
+	    </if>
+	    <if test=" type != null ">
+	    	and type = #{type}
+	    </if>
+	    <if test=" status != null ">
+	    	and status = #{status}
+	    </if>
+	</select>
+
+	<select id="getData" parameterType="map" resultType="map">
+		select * from sc_report 
+		where status > 0
+		<if test="title != null and title != ''">
+	    	and title like concat('%', #{title}, '%')
+	    </if>
+	    <if test=" type != null ">
+	    	and type = #{type}
+	    </if>
+	    <if test=" status != null ">
+	    	and status = #{status}
+	    </if>
+		 order by id desc 
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="map">
+		select * from sc_reply where id = #{id}
+	</select>
+	
+	<select id="getReportById" parameterType="int" resultType="map">
+		select * from sc_report where id = #{id}
+	</select>
+	
+	<select id="getReplyByReportId" parameterType="map" resultType="map">
+		select * from sc_reply where reportId = #{reportId} 
+		and (delete_flag = 0 or (delete_flag = 1 and creator = #{username}))
+		order by id
+	</select>
+	
+	<select id="getValidReplyNumByReportId" parameterType="map" resultType="int">
+		select count(1) from sc_reply where reportId = #{reportId} and delete_flag = 0 
+	</select>
+	
+	<insert id="add" parameterType="map">
+		INSERT INTO sc_reply (reportId, content, delete_flag, creator, createTime) 
+		VALUES (#{reportId}, #{content}, 0, #{creator}, now());
+	</insert>
+	
+	<update id="updateReport" parameterType="map">
+		update sc_report 
+		set status = #{reporStatus}
+		WHERE id = #{reportId}
+	</update>
+	
+	<update id="edit" parameterType="map">
+		update sc_reply 
+		set 
+		 content = #{content},
+		 delete_flag = #{delete_flag},
+		 editTime = now()
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

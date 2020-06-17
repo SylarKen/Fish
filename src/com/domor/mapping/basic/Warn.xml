@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.WarnDao">
+
+	<insert id="insert" parameterType="map">
+		INSERT INTO `warn` ( `noticeMethod`, `noticeTime`, `isOpen`, `creator`, `creatTime`,delete_flag)
+		VALUES(#{noticeMethod}, #{noticeTime}, #{isOpen}, #{loginUser}, now(),0)
+	</insert>
+	
+	<update id="update" parameterType="map">
+		UPDATE `warn` 
+		SET noticeMethod=#{noticeMethod},noticeTime= #{noticeTime}, isOpen=#{isOpen}, `editor`=#{loginUser}, `editTime`=now(),delete_flag= #{delete_flag}
+		WHERE  id = #{id}
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		UPDATE  `warn` SET delete_flag = 1 WHERE  id = #{id}
+	</delete>
+ 
+	<select id="getById" resultType="map" parameterType="int">
+		SELECT * FROM  `warn` WHERE id = #{id} 
+	</select>
+	
+	<select id="count" parameterType="map" resultType="int">
+		SELECT COUNT(1) FROM `warn`
+		<where>
+		<if test="noticeMethod != null and noticeMethod != ''">
+	    	noticeMethod = #{noticeMethod}
+	    </if>
+	    <if test="isOpen != null and isOpen != ''">
+	    	isOpen = #{isOpen}
+	    </if>
+		</where>
+	</select>
+	<select id="query" parameterType="map" resultType="map">
+		SELECT * FROM `warn`
+		<where>
+		<if test="noticeMethod != null and noticeMethod != ''">
+	    	noticeMethod = #{noticeMethod}
+	    </if>
+	    <if test="isOpen != null and isOpen != ''">
+	    	isOpen = #{isOpen}
+	    </if>
+		</where>
+		<if test="sort != null and order != null">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="skipCount != null and rows != null">
+			LIMIT #{start}, #{rows} 
+		</if>
+	</select>
+</mapper>

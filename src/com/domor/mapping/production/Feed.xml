@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.FeedDao">
+
+	<select id="getCount" parameterType="map" resultType="integer">
+		select count(1) from sc_feed
+		<where>
+			<if test="pondCodeArr != null ">
+				AND pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="foodName != null and foodName != ''">
+		    	and foodName like concat('%', #{foodName}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and delete_flag = #{delete_flag}
+		    </if>
+		</where>
+	</select>
+
+	<select id="getData" parameterType="map" resultType="map">
+		select * from sc_feed 
+		<where>
+			<if test="pondCodeArr != null ">
+				AND pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="foodName != null and foodName != ''">
+		    	and foodName like concat('%', #{foodName}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and delete_flag = #{delete_flag}
+		    </if>
+		</where>
+		 order by id desc
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="map">
+		select * from sc_feed where id = #{id}
+	</select>
+	
+	<insert id="add" parameterType="map">
+		INSERT INTO sc_feed (pondCode, pondName, foodId, foodName, foodFactory, foodPihao, feedAmount, feedTime, 
+			sheShiQingKuang, yangZhiMiDu, shuiWen, guangZhaoQiangDu, shuiZhi, memo, createTime, creator,delete_flag) 
+		VALUES (#{pondCode}, #{pondName}, #{foodId}, #{foodName}, #{foodFactory}, #{foodPihao}, #{feedAmount}, #{feedTime}, 
+			#{sheShiQingKuang}, #{yangZhiMiDu}, #{shuiWen}, #{guangZhaoQiangDu}, #{shuiZhi}, #{memo}, now(), #{creator},0);
+	</insert>
+	
+	<update id="edit" parameterType="map">
+		UPDATE sc_feed
+		SET
+		 pondCode = #{pondCode},
+		 pondName = #{pondName},
+		 foodId = #{foodId},
+		 foodName = #{foodName},
+		 foodFactory = #{foodFactory},
+		 foodPihao = #{foodPihao},
+		 feedAmount = #{feedAmount},
+		 feedTime = #{feedTime},
+		 sheShiQingKuang = #{sheShiQingKuang},
+		 yangZhiMiDu = #{yangZhiMiDu},
+		 shuiWen = #{shuiWen},
+		 guangZhaoQiangDu = #{guangZhaoQiangDu},
+		 shuiZhi = #{shuiZhi},
+		 memo = #{memo},
+		 delete_flag = #{delete_flag},
+		 editTime = now(),
+		 editor = #{editor}
+		WHERE id = #{id}
+	</update>
+</mapper>

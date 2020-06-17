@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.business.MapInfoDao">
+
+	<select id="findDeptsByUser" parameterType="String" resultType="map">
+		SELECT * FROM dept WHERE code IN (
+			SELECT DISTINCT p.deptCode FROM rl_user_pond r 
+			LEFT JOIN pond p ON r.pondCode = p.code
+			WHERE r.username = #{username}
+		)
+	</select>
+	
+	<select id="findDeptsByCode" resultType="map">
+		SELECT * FROM dept
+		WHERE code IN 
+		<foreach collection="array" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="findCollecotrIdsByPoint" parameterType="String" resultType="String">
+		SELECT DISTINCT collectorId FROM collector c 
+		WHERE c.pointCode = #{pointCode}
+	</select>
+	
+	<select id="findLastRecords" parameterType="String" resultType="map">
+		SELECT tx.*, co.collectorCode, co.collectorName FROM (
+		SELECT t.collectorID, DATE_FORMAT(MAX(t.time), '%Y-%m-%d %H:%i') AS time FROM tongxin t 
+		LEFT JOIN collector c on t.collectorID = c.collectorId
+		WHERE c.pointCode = #{pointCode}
+		<!-- WHERE c.pointCode IN 
+		<foreach collection="array" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>  -->
+		GROUP BY t.collectorID
+		) ti
+		LEFT JOIN tongxin tx ON tx.collectorID = ti.collectorID AND DATE_FORMAT(tx.time, '%Y-%m-%d %H:%i') = ti.time
+		LEFT JOIN collector co ON tx.collectorID = co.collectorId
+	</select>
+	
+	<select id="countWarn" parameterType="map" resultType="int">
+		SELECT COUNT(1) FROM tongxin t
+		<where>
+			<if test="pointCode != null">
+				AND t.collectorID IN (SELECT collectorId FROM collector WHERE pointCode = #{pointCode})
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryWarn" parameterType="map" resultType="map">
+		SELECT * FROM tongxin t 
+		<where>
+			<if test="pointCode != null">
+				AND t.collectorID IN (SELECT collectorId FROM collector WHERE pointCode = #{pointCode})
+			</if>
+		</where>
+		ORDER BY t.time DESC
+	</select>
+	
+	<select id="getDeviceInfosByDeptCode" resultType="map" parameterType="String">
+		SELECT a.time, a.sensorID AS deviceCode, b.dataType, b.dataKind, b.oxygen, b.temperature, b.ph, b.alarminfo, d.max_value AS maxValue, d.min_value AS minValue 
+		FROM (
+			SELECT t.sensorID, MAX(t.time) AS time
+			FROM tongxin t
+			WHERE t.time IS NOT NULL
+			GROUP BY t.sensorID
+		) a
+		LEFT JOIN (
+			SELECT *
+			FROM tongxin t
+			WHERE t.sensorID IN (
+			SELECT d.deviceCode
+			FROM device d
+			WHERE d.pondCode IN (
+			SELECT p.code
+			FROM pond p
+			WHERE p.deptCode = #{deptCode})) 
+		) b ON a.time = b.time AND a.sensorID = b.sensorID
+		LEFT JOIN device d ON a.sensorID = d.deviceCode
+		WHERE b.dataType IS NOT NULL
+	</select>
+</mapper>

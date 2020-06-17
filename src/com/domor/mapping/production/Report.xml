@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.ReportDao">
+
+	<select id="getCount" parameterType="map" resultType="integer">
+		select count(1) from sc_report
+		<where>
+			<if test="title != null and title != ''">
+		    	and title like concat('%', #{title}, '%')
+		    </if>
+		    <if test="creator != null and creator != ''">
+		    	and creator = #{creator}
+		    </if>
+		    <if test=" type != null ">
+		    	and type = #{type}
+		    </if>
+		    <if test=" status != null ">
+		    	and status = #{status}
+		    </if>
+		</where>
+	</select>
+
+	<select id="getData" parameterType="map" resultType="map">
+		select * from sc_report 
+		<where>
+			<if test="title != null and title != ''">
+		    	and title like concat('%', #{title}, '%')
+		    </if>
+		    <if test="creator != null and creator != ''">
+		    	and creator = #{creator}
+		    </if>
+		    <if test=" type != null ">
+		    	and type = #{type}
+		    </if>
+		    <if test=" status != null ">
+		    	and status = #{status}
+		    </if>
+		</where>
+		 order by id desc 
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="map">
+		select * from sc_report where id = #{id}
+	</select>
+	
+	<select id="getReplyByReportId" parameterType="map" resultType="map">
+		select * from sc_reply where reportId = #{reportId} and delete_flag = 0 order by id
+	</select>
+	
+	<insert id="add" parameterType="map">
+		INSERT INTO sc_report (type, status, title, content, createTime, creator) 
+		VALUES ( #{type}, 0, #{title}, #{content}, now(), #{creator});
+	</insert>
+	
+	<update id="edit" parameterType="map">
+		UPDATE sc_report
+		SET 
+		 type = #{type},
+		 status = 0,
+		 title = #{title},
+		 content = #{content},
+		 editTime = now()
+		WHERE
+		 id = #{id}
+	</update>
+	
+	<update id="report" parameterType="map">
+		UPDATE sc_report
+		SET 
+		 status = 1,
+		 reportTime = now()
+		WHERE
+		 id = #{id}
+	</update>
+</mapper>

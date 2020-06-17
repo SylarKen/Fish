@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.DeviceDao">
+
+	<insert id="insert" parameterType="map">
+		INSERT INTO device (deviceCode, deviceId, deviceName, collectorId, collectorCode, collectorName, typeCode, typeName, areaCode, areaName, pondCode, pondName, buyDate, expiringDate, effectiveDate, max_value, min_value, creator, createTime, delete_flag) 
+		VALUES (#{deviceCode}, #{deviceId}, #{deviceName},#{collectorId}, #{collectorCode}, #{collectorName}, #{typeCode}, #{typeName}, #{areaCode}, #{areaName}, #{pondCode}, #{pondName}, #{buyDate}, #{expiringDate}, #{effectiveDate}, #{maxval}, #{minval}, #{creator}, NOW(), 0)
+	</insert>
+	
+	<update id="update" parameterType="map">
+		UPDATE device SET 
+		 deviceId = #{deviceId},
+		 deviceName = #{deviceName},
+		 collectorCode = #{collectorCode},
+		 collectorName = #{collectorName},
+		 typeCode = #{typeCode},
+		 typeName = #{typeName},
+		 areaCode = #{areaCode},
+		 areaName = #{areaName},
+		 pondCode = #{pondCode},
+		 pondName = #{pondName},
+		 buyDate = #{buyDate},
+		 expiringDate = #{expiringDate},
+		 effectiveDate = #{effectiveDate},
+		 max_value = #{maxval},
+		 min_value = #{minval},
+		 editor = #{editor},
+		 editTime = NOW(),
+		 delete_flag = #{delete_flag}
+		WHERE deviceCode = #{deviceCode}
+	</update>
+	
+	<select id="count" parameterType="map" resultType="int">
+		SELECT COUNT(1) FROM device WHERE 0 = 0
+			<if test="deviceCode != null and deviceCode != ''">
+		    	 AND deviceCode like concat('%', #{deviceCode}, '%')
+		    </if>
+			<if test="collectorCode != null and collectorCode != ''">
+		    	 AND collectorCode like concat('%', #{collectorCode}, '%')
+		    </if>
+	     	<if test="pondCode != null and pondCode != ''">
+		    	 AND pondCode like concat('%', #{pondCode}, '%')
+		    </if>
+	</select>
+	<select id="query" parameterType="map" resultType="map">
+		SELECT * FROM device WHERE 0 = 0
+		<if test="deviceCode != null and deviceCode != ''">
+	    	 AND deviceCode like concat('%', #{deviceCode}, '%')
+	    </if>
+		<if test="collectorCode != null and collectorCode != ''">
+	    	 AND collectorCode like concat('%', #{collectorCode}, '%')
+	    </if>
+     	<if test="pondCode != null and pondCode != ''">
+	    	 AND pondCode like concat('%', #{pondCode}, '%')
+	    </if>
+		<if test="sort != null and order != ''">
+	    	ORDER BY ${sort} ${order}
+	    </if>
+	    <if test="start != null and rows != ''">
+			LIMIT #{start}, #{rows} 
+		</if>
+	</select>
+	
+	<select id="getLastCode" resultType="String" parameterType="String">
+		SELECT deviceCode FROM device WHERE deviceCode like CONCAT('%', #{code}, '%') order by deviceCode desc limit 1
+	</select>
+	
+	<select id="getByCode" resultType="map" parameterType="String">
+		SELECT * FROM device WHERE deviceCode = #{code}
+	</select>
+	
+	<select id="getRule" resultType="String" parameterType="String">
+		SELECT rule FROM device_type WHERE typeCode = #{typeCode}
+	</select>
+	
+	<select id="getTypes" resultType="map">
+		SELECT * FROM device_type WHERE delete_flag=0
+	</select>
+	
+	<select id="getDepts" resultType="map" parameterType="map">
+		SELECT name,code,pcode,grade FROM dept WHERE delete_flag=0 and pcode=#{pcode} 
+		<if test="areaCode != null and areaCode != ''">
+			and areaId=#{areaCode}
+		</if>
+	</select>
+	<select id="getPonds" resultType="map" parameterType="String">
+		SELECT name,code,deptCode as pcode, 3 as grade,'closed' as state FROM pond WHERE delete_flag=0 and deptCode=#{deptCode}
+	</select>
+	
+</mapper>

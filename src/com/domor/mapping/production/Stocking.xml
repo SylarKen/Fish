@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.StockingDao">
+
+	<select id="getCount" parameterType="map" resultType="integer">
+		select count(1) from sc_stocking a 
+		left join pond b  on a.pondCode = b.code  
+		left join sc_fishinfo c on a.fishid = c.id 
+		<where>
+			<if test="pondCodeArr != null ">
+				AND a.pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="fishname != null and fishname != ''">
+		    	and c.fishname like concat('%', #{fishname}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and a.delete_flag = #{delete_flag}
+		    </if>
+		</where>
+	</select>
+
+	<select id="getData" parameterType="map" resultType="map">
+		select a.* ,b.area as pondArea ,b.name as pondName ,c.fishname  from sc_stocking a 
+		left join pond b  on a.pondCode = b.code 
+		left join sc_fishinfo c on a.fishid = c.id 
+		<where>
+			<if test="pondCodeArr != null ">
+				AND a.pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="fishname != null and fishname != ''">
+		    	and c.fishname like concat('%', #{fishname}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and a.delete_flag = #{delete_flag}
+		    </if>
+		</where>
+		<if test="sort != null and order != null">
+	    	order by ${sort} ${order}
+	    </if>
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="map">
+		select a.* ,b.area as pondArea ,b.name as pondName ,c.fishname  from sc_stocking a 
+		left join pond b  on a.pondCode = b.code 
+		left join sc_fishinfo c on a.fishid = c.id 
+		where a.id = #{id}
+	</select>
+	
+	<select id="getByPondInfo" parameterType="map" resultType="map">
+		select * from sc_stocking where code = #{code}
+	</select>
+	
+	<insert id="add" parameterType="map">
+		INSERT INTO sc_stocking 
+		(pondCode, throwdate, fishid, fishfrom, standard, 
+		density, quarantine, degassing, weight, waterQuality, 
+		batchNumber,memo, createTime, creator,delete_flag) 
+		VALUES
+		(#{pondCode}, #{throwdate}, #{fishid}, #{fishfrom}, #{standard}, 
+		#{density}, #{quarantine}, #{degassing}, #{weight}, #{waterQuality},
+		 #{batchNumber}, #{memo},  now(), #{creator},0);
+	</insert>
+	
+	<update id="edit" parameterType="map">
+		UPDATE sc_stocking
+		SET
+		 pondCode = #{pondCode},
+		 throwdate = #{throwdate},
+		 fishid = #{fishid},
+		 fishfrom = #{fishfrom},
+		 standard = #{standard},
+		 density = #{density},
+		 quarantine = #{quarantine},
+		 degassing = #{degassing},
+		 weight = #{weight},
+		 waterQuality = #{waterQuality},
+		 batchNumber = #{batchNumber},
+		 memo = #{memo},
+		 delete_flag = #{delete_flag},
+		 editTime = now(),
+		 editor = #{editor}
+		WHERE id = #{id}
+	</update>
+</mapper>

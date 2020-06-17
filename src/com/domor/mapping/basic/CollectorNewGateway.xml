@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.CollectorNewGatewayDao">
+
+    <insert id="insert" parameterType="map">
+        INSERT INTO collector_new_gateway(collectorCode, collectorId, collectorName, areaCode, areaName, deptCode, deptName, buyDate, expiringDate, effectiveDate, creator, createTime, delete_flag, runMode, db)
+        VALUES (#{collectorCode}, #{collectorId}, #{collectorName}, #{areaCode}, #{areaName}, #{deptCode}, #{deptName}, #{buyDate}, #{expiringDate}, #{effectiveDate}, #{creator}, NOW(), 0, "0", "0")
+    </insert>
+
+    <update id="update" parameterType="map">
+        UPDATE collector_new_gateway SET
+        collectorCode = #{collectorCode},
+        collectorId = #{collectorId},
+        collectorName = #{collectorName},
+        areaCode = #{areaCode},
+        areaName = #{areaName},
+        deptCode = #{deptCode},
+        deptName = #{deptName},
+        buyDate = #{buyDate},
+        expiringDate = #{expiringDate},
+        effectiveDate = #{effectiveDate},
+        editor = #{editor},
+        editTime = NOW(),
+        delete_flag = #{delete_flag}
+        WHERE
+        collectorCode = #{collectorCode}
+    </update>
+
+    <update id="updatethreshold" parameterType="map">
+        UPDATE collector_new_gateway SET
+        collectorCode = #{collectorCode},
+        collectorId = #{collectorId},
+        threshold_on = #{threshold_on},
+        threshold_off = #{threshold_off}
+        WHERE
+        collectorCode = #{collectorCode}
+    </update>
+
+    <update id="updateautomatic" parameterType="map">
+        UPDATE collector_new_gateway SET
+        runMode = #{runMode},
+        db = #{db}
+        WHERE
+        collectorId = #{collectorId}
+    </update>
+
+    <select id="getLastCode" resultType="String" parameterType="String">
+        SELECT collectorCode FROM collector_new_gateway WHERE collectorCode like CONCAT('%', #{code}, '%')
+    </select>
+
+    <select id="getByCode" resultType="map" parameterType="String">
+        SELECT * FROM collector_new_gateway  WHERE collectorCode = #{code}
+    </select>
+
+    <select id="getById" resultType="map" parameterType="String">
+        SELECT * FROM collector_new_gateway  WHERE collectorId = #{id}
+    </select>
+
+    <select id="count" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM collector_new_gateway WHERE 0 = 0
+        <if test="collectorCode != null and collectorCode != ''">
+            and collectorCode like concat('%', #{collectorCode}, '%')
+        </if>
+        <if test="pointCode != null and pointCode != ''">
+            and pointCode like concat('%', #{pointCode}, '%')
+        </if>
+    </select>
+    <select id="query" parameterType="map" resultType="map">
+        SELECT * FROM collector_new_gateway WHERE 0 = 0
+        <if test="collectorCode != null and collectorCode != ''">
+            and collectorCode like concat('%', #{collectorCode}, '%')
+        </if>
+        <if test="deptCode != null and deptCode != ''">
+            and deptCode like concat('%', #{deptCode}, '%')
+        </if>
+        <if test="sort != null and order != ''">
+            ORDER BY ${sort} ${order}
+        </if>
+        <if test="start != null and rows != ''">
+            LIMIT #{start}, #{rows}
+        </if>
+    </select>
+
+    <select id="get_Records" parameterType="String" resultType="map">
+        select *
+        from (
+                 SELECT *
+                 FROM t_record
+                 WHERE ICCID = #{id}
+                 ORDER BY id desc
+                 LIMIT 50) as tab
+        order by tab.id asc
+    </select>
+</mapper>

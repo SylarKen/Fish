@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.production.DrugDao">
+
+	<select id="getCount" parameterType="map" resultType="integer">
+		select count(1) from sc_drug
+		<where>
+			<if test="pondCodeArr != null ">
+				AND pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="medicineName != null and medicineName != ''">
+		    	and medicineName like concat('%', #{medicineName}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and delete_flag = #{delete_flag}
+		    </if>
+		</where>
+	</select>
+
+	<select id="getData" parameterType="map" resultType="map">
+		select * from sc_drug 
+		<where>
+			<if test="pondCodeArr != null ">
+				AND pondCode in 
+				<foreach collection="pondCodeArr" item="pondCode" index="index" open="(" close=")" separator=",">
+					#{pondCode} 
+				</foreach>
+			</if>
+			<if test="medicineName != null and medicineName != ''">
+		    	and medicineName like concat('%', #{medicineName}, '%')
+		    </if>
+		    <if test="delete_flag != null ">
+		    	and delete_flag = #{delete_flag}
+		    </if>
+		</where>
+		 order by id desc
+		<if test="start != null and rows != null">
+			limit #{start},#{rows} 
+		</if>
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="map">
+		select * from sc_drug where id = #{id}
+	</select>
+	
+	<insert id="add" parameterType="map">
+		INSERT INTO sc_drug (pondCode, pondName, faBingBreed, faBingTime, zhenDuanResult, chuFangRen, 
+		medicineId, medicineName, shengChanChangJia, piHao, yongYaoLiang, yongYaoNongDu, 
+		shiYaoTime, shiYaoRen, yongYaoLiYou, yongYaoXiaoGuo, xiuYaoQi, guangZhaoQiangDu, 
+		shuiZhi, shuiWen, memo, delete_flag, createTime, creator)  
+		VALUES ( #{pondCode}, #{pondName}, #{faBingBreed}, #{faBingTime}, #{zhenDuanResult}, #{chuFangRen}, 
+		#{medicineId}, #{medicineName}, #{shengChanChangJia}, #{piHao}, #{yongYaoLiang}, #{yongYaoNongDu},
+		#{shiYaoTime}, #{shiYaoRen}, #{yongYaoLiYou}, #{yongYaoXiaoGuo}, #{xiuYaoQi}, #{guangZhaoQiangDu},
+		#{shuiZhi}, #{shuiWen}, #{memo}, 0, now(), #{creator})
+	</insert>
+	
+	<update id="edit" parameterType="map">
+		UPDATE sc_drug
+		SET 
+		 pondCode = #{pondCode},
+		 pondName = #{pondName},
+		 faBingBreed = #{faBingBreed},
+		 faBingTime = #{faBingTime},
+		 zhenDuanResult = #{zhenDuanResult},
+		 chuFangRen = #{chuFangRen},
+		 medicineId = #{medicineId},
+		 medicineName = #{medicineName},
+		 shengChanChangJia = #{shengChanChangJia},
+		 piHao = #{piHao},
+		 yongYaoLiang = #{yongYaoLiang},
+		 yongYaoNongDu = #{yongYaoNongDu},
+		 shiYaoTime = #{shiYaoTime},
+		 shiYaoRen = #{shiYaoRen},
+		 yongYaoLiYou = #{yongYaoLiYou},
+		 yongYaoXiaoGuo = #{yongYaoXiaoGuo},
+		 xiuYaoQi = #{xiuYaoQi},
+		 guangZhaoQiangDu = #{guangZhaoQiangDu},
+		 shuiZhi = #{shuiZhi},
+		 shuiWen = #{shuiWen},
+		 memo = #{memo},
+		 delete_flag = #{delete_flag},
+		 editTime = now(),
+		 editor = #{editor}
+		WHERE id = #{id}
+	</update>
+</mapper>

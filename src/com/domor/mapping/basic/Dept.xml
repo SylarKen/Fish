@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.domor.dao.basic.DeptDao">
+   <insert id="insert" parameterType="map">
+		INSERT INTO `dept` (`code`,`pcode`, `grade`, `name`,`areaId`,`areaName`,`lng`,`lat`, `address`, `linkman`, `linkphone`, `creator`, `creatTime`,`memo`,delete_flag)
+		VALUES (#{code}, #{pcode}, #{grade}, #{name}, #{areaId}, #{areaName}, #{lng}, #{lat}, #{address}, #{linkman}, #{linkphone}, #{loginUser}, NOW(), #{memo},0)
+	</insert>
+	<update id="update" parameterType="map">
+		UPDATE `dept` 
+		SET 	
+	      `code`=#{code},pcode=#{pcode}, grade=#{grade}, `name`=#{name}, areaId=#{areaId}, areaName=#{areaName}, lng=#{lng}, lat=#{lat},
+		 `address`=#{address}, `linkman`=#{linkman}, `linkphone`=#{linkphone}, 
+	      `editor`=#{editor}, `editTime`=NOW(), `memo` = #{memo},delete_flag=#{delete_flag}
+	   WHERE  
+	   	  code = #{code}
+	</update>
+ 
+	<select id="findById" parameterType="String" resultType="map">
+		SELECT *,concat(lng,',',lat) lng_lat FROM  `dept`  WHERE  code = #{code}
+	</select>
+ 
+	
+	<select id="getNewCode1" resultType="String" >
+	   SELECT  LPAD(CONVERT(IFNULL(SUBSTRING(max(`code`),1,3),'000'),SIGNED)+1 ,3 ,0) newCode FROM `dept` where grade = 1
+		<!-- 
+		 SELECT ISNULL(RIGHT('000' + CAST(CAST(MAX(code) AS INT) + 1 AS VARCHAR), 3), '001') 
+			FROM dept d WHERE 
+			d.companyId =#{param1} AND d.type = #{param2}
+		-->
+	</select>
+	
+    <select id="getNewCode2" resultType="String" >
+		   SELECT CONCAT(#{pcode} ,  LPAD(CONVERT(IFNULL(SUBSTRING(max(`code`),4,2),'00'),SIGNED)+1 ,2 ,0)) newCode FROM `dept`
+		    where grade = 2 and pcode = #{pcode} 
+	</select>
+ 
+	
+	<select id="getChildDepts" resultType="map" >
+		select c.* from (
+		SELECT a.code from dept a  join `user` b on a.code = b.dept  and b.username=#{username}) aa
+		 join dept c on c.pcode = aa.code or c.code = aa.code
+		order by grade,c.creatTime
+	</select>
+	
+	
+	<select id="getDeptForComb" resultType="map" >
+		select bb.* from (SELECT a.* from dept a join `user` b on a.`code` = b.dept and b.username=#{param1}) aa
+		join dept bb on aa.code = bb.pcode or aa.code = bb.code
+		<where>
+		  <if test="param2 != null and param2 != ''">
+				bb.areaId = #{param2}
+		  </if>
+		</where>
+		order by bb.grade,bb.code
+	</select>
+
+	<select id="getAreaTreeData" resultType="map" >
+		select * from area <!-- where <![CDATA[`level`<4]]> --> order by `level`, `id`
+	</select>
+	
+	
+ 
+    <select id="getChildDeptsForTree"  parameterType="map" resultType="map" >
+    
+		SELECT DISTINCT f.* from (
+			 	 select d.* from 
+				(
+				 	select c.* from (SELECT a.code from dept a  join `user` b on a.code = b.dept  and b.username=#{username}) aa
+					join dept c on c.pcode = aa.code 
+				 )dd join dept d on dd.code = d.pcode or dd.code = d.code
+				 <where>
+				   	  <if test="code != null and code != ''">
+				    	and d.code = #{code}
+				      </if>
+					  <if test="name != null and name != ''">
+				    	d.name like concat('%',#{name}, '%')
+				      </if>
+				      <if test="areaId != null and areaId != ''">
+				    	  d.areaId = #{areaId}
+				      </if>
+			     </where>
+
+		)e join dept f on e.code = f.pcode or e.code = f.code or e.pcode = f.code 
+    	 where  
+    	  <![CDATA[
+    	 	 f.code <> (SELECT a.code from dept a  join `user` b on a.code = b.dept  and b.username=#{username})
+    	   ]]>
+
+	 	order by f.grade,f.code
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.basic.MenuDao">
+
+	<insert id="insert" parameterType="com.domor.model.Menu">
+		INSERT INTO menu(menuName, menuUrl, iconUrl, parentId, menuLevel, isLeaf, menuType, menuOrder, delete_flag, creator, createTime) 
+		VALUES(#{menuName}, #{menuUrl}, #{iconUrl}, #{parentId}, #{menuLevel}, #{isLeaf}, #{menuType}, #{menuOrder}, #{delete_flag}, #{creator}, #{createTime});
+	</insert>
+	<update id="update" parameterType="com.domor.model.Menu">
+		UPDATE menu
+		SET 
+			menuName = #{menuName},
+			menuUrl = #{menuUrl},
+			iconUrl = #{iconUrl},
+			parentId = #{parentId},
+			menuLevel = #{menuLevel},
+			isLeaf = #{isLeaf},
+			menuType = #{menuType},
+			menuOrder = #{menuOrder},
+			editor = #{editor},
+			editTime = #{editTime}
+		WHERE
+			menuId = #{menuId}
+	</update>
+	<delete id="delete" parameterType="int">
+		UPDATE menu SET delete_flag = 1 WHERE menuId = #{menuId}
+	</delete>
+	<update id="setLeaf" parameterType="int">
+		UPDATE menu
+		SET 
+			isLeaf = #{param1}
+		WHERE
+			menuId = #{param2}
+	</update>
+	<select id="findById" parameterType="int" resultType="com.domor.model.Menu">
+		SELECT * FROM menu WHERE menuId = #{menuId}
+	</select>
+	<select id="count" parameterType="map" resultType="int">
+		SELECT COUNT(1) FROM menu
+		<where>
+			<if test="menuType != null">
+				AND menuType = #{menuType}
+			</if>
+			<if test="parentId != null">
+				AND parentId = #{parentId}
+			</if>
+		</where>
+	</select>
+	<select id="query" parameterType="map" resultType="com.domor.model.Menu">
+		SELECT * FROM menu
+		<where>
+			<if test="menuType != null">
+				AND menuType = #{menuType}
+			</if>
+			<if test="parentId != null">
+				AND parentId = #{parentId}
+			</if>
+			<if test="delete_flag != null">
+				AND delete_flag = #{delete_flag}
+			</if>
+		</where>
+		order by parentId,menuOrder desc
+	    <if test="start != null and rows != null">
+			LIMIT #{start}, #{rows} 
+		</if>
+	</select>
+	<delete id="deleteRightsBatch" parameterType="java.util.List">
+		delete from rights WHERE menuId IN 
+		<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	<delete id="deleteBatch" parameterType="java.util.List">
+		delete from menu WHERE menuId IN 
+		<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	<select id="getMenuIdsByRoleId" parameterType="int" resultType="int">
+		select menuId from rights where roleId = #{roleId} AND delete_flag = 0
+	</select>
+	<select id="queryIds" parameterType="map" resultType="int">
+		select menuId from menu 
+		<where>
+			<if test="delete_flag != null">
+				AND delete_flag = #{delete_flag}
+			</if>
+			<if test="parentId != null">
+				AND parentId = #{parentId}
+			</if>
+			<if test="menuType != null">
+				AND menuType = #{menuType}
+			</if>
+			<if test="isLeaf != null">
+				AND isLeaf = #{isLeaf}
+			</if>
+			<if test="menuIds != null">
+				AND menuId IN 
+				<foreach collection="menuIds" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="queryParentIds" parameterType="map" resultType="int">
+		SELECT parentId FROM menu 
+		<where>
+			parentId != 0 
+			<if test="delete_flag != null">
+				AND delete_flag = #{delete_flag}
+			</if>
+			<if test="menuType != null">
+				AND menuType = #{menuType}
+			</if>
+			<if test="menuIds != null">
+				AND menuId IN 
+				<foreach collection="menuIds" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<insert id="addRights">
+		INSERT INTO rights(roleId, menuId) VALUES
+		<foreach collection="param2" item="item" index="index" separator=",">
+			(#{param1}, #{item})
+		</foreach>
+	</insert>
+	<delete id="delRightsByRoleId" parameterType="int">
+		DELETE FROM rights WHERE roleId = #{roleId}
+	</delete>
+</mapper>

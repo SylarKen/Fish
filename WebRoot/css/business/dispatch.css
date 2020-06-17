@@ -1,0 +1,5 @@
+.dispatch-table {width: 720px;margin: 0 10px;table-layout: fixed;border-width: 1px;border-color: #666666;border-collapse: collapse;}
+.dispatch-table tr {height: 35px;}
+.dispatch-table tr td {width: 120px;border-width: 1px; border-style: solid;border-color: #666666;background-color: #ffffff;vertical-align: bottom;}
+.dispatch-table tr td h2 {height: 48px;line-height: 48px;margin: 0;text-align: center;}
+.dispatch-table tr td input {border: none;outline:none;}
